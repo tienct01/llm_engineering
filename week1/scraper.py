@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 
 # Standard headers to fetch a website
@@ -23,6 +25,30 @@ def fetch_website_contents(url):
     else:
         text = ""
     return (title + "\n\n" + text)[:2_000]
+
+def fetch_website_content_with_selenium(url):
+    """
+    Return the content of website with selenium
+    """
+    options = Options()
+    options.add_argument("--headless")
+
+    driver = webdriver.Chrome(options=options) 
+    driver.get(url)
+
+    driver.implicitly_wait(2)
+
+    html_content = driver.page_source
+    soup = BeautifulSoup(html_content, "html.parser")
+    title = soup.title.string if soup.title else "No title found"
+    if soup.body:
+        for irrelevant in soup.body(["script", "style", "img", "input"]):
+            irrelevant.decompose()
+        text = soup.body.get_text(separator="\n", strip=True)
+    else:
+        text = ""
+    return (title + "\n\n" + text)[:2_000]
+
 
 
 def fetch_website_links(url):
